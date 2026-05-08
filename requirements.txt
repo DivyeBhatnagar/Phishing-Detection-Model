@@ -1,0 +1,82 @@
+# ============================================================
+# AI-Powered Phishing Email Detection System
+# Complete Requirements File
+# ============================================================
+
+# --- Core FastAPI & ASGI ---
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+
+# --- Authentication & Security ---
+python-jose[cryptography]
+passlib[bcrypt]
+pydantic[email]
+pydantic-settings
+slowapi
+python-dotenv
+
+# --- Database ---
+motor
+pymongo
+beanie
+
+# --- Machine Learning ---
+scikit-learn
+xgboost
+lightgbm
+imbalanced-learn
+
+# --- NLP & Text Processing ---
+nltk
+spacy
+beautifulsoup4
+lxml
+regex
+
+# --- Data Processing ---
+pandas
+numpy
+scipy
+
+# --- Model Persistence ---
+joblib
+
+# --- Visualization & Explainability ---
+matplotlib
+seaborn
+shap
+plotly
+
+# --- Background Tasks ---
+celery
+redis
+flower
+
+# --- Logging & Monitoring ---
+loguru
+prometheus-fastapi-instrumentator
+prometheus-client
+
+# --- Scheduling ---
+apscheduler
+
+# --- Testing ---
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+factory-boy
+
+# --- Code Quality ---
+black
+flake8
+mypy
+isort
+
+# --- Utilities ---
+python-dateutil
+tqdm
+click
+rich

@@ -1,0 +1,130 @@
+### PhishGuard AI — API Example Requests (Bruno / cURL)
+### Save this file and run these examples after starting the server
+
+### ============================================================
+### 1. Health Check (Public)
+### ============================================================
+
+GET http://localhost:8000/api/v1/health
+Accept: application/json
+
+###
+
+### ============================================================
+### 2. Predict Phishing Email (Anonymous)
+### ============================================================
+
+POST http://localhost:8000/api/v1/predict
+Content-Type: application/json
+
+{
+  "email_text": "CONGRATULATIONS!! You have been selected as our lucky winner. Click the link below to claim your $1,000,000 prize IMMEDIATELY! Limited time offer, ACT NOW!!! http://definitely-not-phishing.ru/claim?user=winner",
+  "include_explanation": false
+}
+
+###
+
+### ============================================================
+### 3. Predict Legitimate Email
+### ============================================================
+
+POST http://localhost:8000/api/v1/predict
+Content-Type: application/json
+
+{
+  "email_text": "Hi team, please find the attached Q1 financial report for your review. The board meeting is scheduled for next Tuesday at 10 AM in conference room B. Please come prepared with your department updates.",
+  "include_explanation": false
+}
+
+###
+
+### ============================================================
+### 4. Predict with SHAP Explanation
+### ============================================================
+
+POST http://localhost:8000/api/v1/predict
+Content-Type: application/json
+
+{
+  "email_text": "URGENT SECURITY ALERT: Your PayPal account has been suspended. Verify your identity immediately to restore access. Click here: http://paypa1-secure.com/verify",
+  "include_explanation": true
+}
+
+###
+
+### ============================================================
+### 5. Register New User
+### ============================================================
+
+POST http://localhost:8000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "SecurePassword123"
+}
+
+###
+
+### ============================================================
+### 6. Login (Get JWT Token)
+### ============================================================
+
+POST http://localhost:8000/api/v1/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username=testuser&password=SecurePassword123
+
+###
+
+### ============================================================
+### 7. Get Model Metrics (Requires Auth)
+### ============================================================
+
+GET http://localhost:8000/api/v1/metrics
+Authorization: Bearer <your-jwt-token-here>
+
+###
+
+### ============================================================
+### 8. Get Prediction History (Requires Auth)
+### ============================================================
+
+GET http://localhost:8000/api/v1/history?page=1&page_size=10
+Authorization: Bearer <your-jwt-token-here>
+
+###
+
+### ============================================================
+### 9. Trigger Model Training (Admin Only)
+### ============================================================
+
+POST http://localhost:8000/api/v1/train
+X-API-Key: admin-key-change-me
+Content-Type: application/json
+
+{
+  "max_features": 75000,
+  "use_char_ngrams": true,
+  "run_cv": false,
+  "min_recall": 0.95
+}
+
+###
+
+### ============================================================
+### 10. Batch Predict (Requires Auth)
+### ============================================================
+
+POST http://localhost:8000/api/v1/predict/batch
+Authorization: Bearer <your-jwt-token-here>
+Content-Type: application/json
+
+[
+  {"email_text": "FREE iPhone! Click to claim your prize now!"},
+  {"email_text": "Please review the attached document for the project update."},
+  {"email_text": "Your account password has been compromised. Verify here: http://fake.com"}
+]
+
+###

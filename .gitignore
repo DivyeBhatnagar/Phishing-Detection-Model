@@ -1,0 +1,130 @@
+# ============================================================
+# AI-Powered Phishing Detection System - .gitignore
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Virtual Environments ---
+.env
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# --- IDE & Editors ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints/
+*.ipynb
+
+# --- Testing ---
+.pytest_cache/
+.coverage
+htmlcov/
+*.coveragerc
+coverage.xml
+nosetests.xml
+test-results/
+
+# --- Logs ---
+logs/*.log
+logs/*.json
+*.log
+
+# --- ML Models (large binary files) ---
+models/saved/*.pkl
+models/saved/*.joblib
+models/saved/*.h5
+models/saved/*.pt
+models/saved/*.bin
+
+# --- Datasets (usually too large for git) ---
+datasets/*.csv
+datasets/*.json
+datasets/*.parquet
+datasets/*.zip
+
+# --- Docker ---
+.docker/
+
+# --- OS ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V4/
+.Trashes
+ehthumbs.db
+
+# --- Security ---
+.env
+secrets/
+*.pem
+*.key
+*.crt
+
+# --- NLTK Data ---
+nltk_data/
+
+# --- Celery ---
+celerybeat-schedule
+celerybeat.pid
+
+# --- Redis dump ---
+dump.rdb
+
+# --- MyPy ---
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# --- Compiled translations ---
+*.mo
+*.pot
+
+# --- Distribution / Packaging ---
+*.spec
+
+# --- Profiling ---
+*.prof
+
+# --- Temporary files ---
+*.tmp
+*.bak
+*.swp
+tmp/
+temp/
+Dataset/
+*.csv

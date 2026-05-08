@@ -1,0 +1,170 @@
+version: '3.9'
+
+# ============================================================
+# PhishGuard AI - Docker Compose
+# Services: FastAPI, MongoDB, Redis, Celery Worker, Flower
+# ============================================================
+
+services:
+
+  # ── FastAPI Application ─────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: phishguard_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - DEBUG=false
+      - MONGO_URI=mongodb://admin:${MONGO_PASSWORD:-phishguard123}@mongodb:27017
+      - MONGO_DB_NAME=phishguard
+      - MONGO_USERNAME=admin
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-phishguard123}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - SECRET_KEY=${SECRET_KEY:-change-this-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-secret-change-me}
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-admin-key-change-me}
+      - ALLOWED_ORIGINS=["http://localhost:3000","http://localhost:8080"]
+    volumes:
+      - ./models:/app/models         # Persist trained models
+      - ./datasets:/app/datasets     # Shared dataset access
+      - ./logs:/app/logs             # Persist logs
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - phishguard_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ── MongoDB ─────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: phishguard_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-phishguard123}
+      MONGO_INITDB_DATABASE: phishguard
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - phishguard_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Redis (Celery Broker) ───────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: phishguard_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - phishguard_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Celery Worker ───────────────────────────────────────────
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: phishguard_celery
+    restart: unless-stopped
+    command: >
+      celery -A backend.services.celery_worker.celery_app
+      worker --loglevel=info --concurrency=2
+      -Q default,training
+    environment:
+      - APP_ENV=production
+      - MONGO_URI=mongodb://admin:${MONGO_PASSWORD:-phishguard123}@mongodb:27017
+      - MONGO_DB_NAME=phishguard
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    volumes:
+      - ./models:/app/models
+      - ./datasets:/app/datasets
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - phishguard_net
+
+  # ── Celery Beat (Scheduler) ─────────────────────────────────
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: phishguard_beat
+    restart: unless-stopped
+    command: >
+      celery -A backend.services.celery_worker.celery_app
+      beat --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    depends_on:
+      - redis
+    networks:
+      - phishguard_net
+
+  # ── Flower (Celery Monitor) ─────────────────────────────────
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: phishguard_flower
+    restart: unless-stopped
+    command: >
+      celery -A backend.services.celery_worker.celery_app
+      flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - phishguard_net
+
+volumes:
+  mongodb_data:
+    name: phishguard_mongodb_data
+  redis_data:
+    name: phishguard_redis_data
+
+networks:
+  phishguard_net:
+    name: phishguard_network
+    driver: bridge
